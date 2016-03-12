@@ -40,6 +40,7 @@ public final class FusumaViewController: UIViewController, FSCameraViewDelegate,
     
     var albumView  = FSAlbumView.instance()
     var cameraView = FSCameraView.instance()
+    var initialMode = Mode.Library
     
     public weak var delegate: FusumaDelegate? = nil
     
@@ -87,7 +88,7 @@ public final class FusumaViewController: UIViewController, FSCameraViewDelegate,
         cameraButton.clipsToBounds  = true
         libraryButton.clipsToBounds = true
 
-        changeMode(Mode.Library)
+        changeMode(initialMode)
         
         photoLibraryViewerContainer.addSubview(albumView)
         cameraShotContainer.addSubview(cameraView)
