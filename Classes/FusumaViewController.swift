@@ -41,6 +41,7 @@ public final class FusumaViewController: UIViewController, FSCameraViewDelegate,
     var albumView  = FSAlbumView.instance()
     var cameraView = FSCameraView.instance()
     public var initialMode = Mode.Library
+    public var returnOriginal = false
     
     public weak var delegate: FusumaDelegate? = nil
     
@@ -138,15 +139,19 @@ public final class FusumaViewController: UIViewController, FSCameraViewDelegate,
         
         let view = albumView.imageCropView
         
-        UIGraphicsBeginImageContextWithOptions(view.frame.size, true, 0)
-        let context = UIGraphicsGetCurrentContext()
-        CGContextTranslateCTM(context, -albumView.imageCropView.contentOffset.x, -albumView.imageCropView.contentOffset.y)
-        view.layer.renderInContext(context!)
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
+        var image = view.image
+        
+        if !returnOriginal {
+            UIGraphicsBeginImageContextWithOptions(view.frame.size, true, 0)
+            let context = UIGraphicsGetCurrentContext()
+            CGContextTranslateCTM(context, -albumView.imageCropView.contentOffset.x, -albumView.imageCropView.contentOffset.y)
+            view.layer.renderInContext(context!)
+            image = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+        }
         
         delegate?.fusumaImageSelected(image)
-        
+
         self.dismissViewControllerAnimated(true, completion: {
             
             self.delegate?.fusumaDismissedWithImage(image)
