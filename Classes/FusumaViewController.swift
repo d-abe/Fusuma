@@ -20,7 +20,7 @@ public var fusumaBackgroundColor = UIColor.hex("#212121", alpha: 1.0)
 
 public final class FusumaViewController: UIViewController, FSCameraViewDelegate, FSAlbumViewDelegate {
     
-    enum Mode {
+    public enum Mode {
         case Camera
         case Library
     }
@@ -40,7 +40,7 @@ public final class FusumaViewController: UIViewController, FSCameraViewDelegate,
     
     var albumView  = FSAlbumView.instance()
     var cameraView = FSCameraView.instance()
-    var initialMode = Mode.Library
+    public var initialMode = Mode.Library
     
     public weak var delegate: FusumaDelegate? = nil
     
