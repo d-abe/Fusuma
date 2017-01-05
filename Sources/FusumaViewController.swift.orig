@@ -7,25 +7,52 @@
 //
 
 import UIKit
+import Photos
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
+fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l > r
+  default:
+    return rhs < lhs
+  }
+}
+
 
 @objc public protocol FusumaDelegate: class {
-    
+<<<<<<< HEAD
+
     func fusumaImageSelected(image: UIImage)
     optional func fusumaDismissedWithImage(image: UIImage)
     func fusumaVideoCompleted(withFileURL fileURL: NSURL)
     func fusumaCameraRollUnauthorized()
-    
+
     optional func fusumaClosed()
+=======
+    
+    func fusumaImageSelected(_ image: UIImage)
+    @objc optional func fusumaDismissedWithImage(_ image: UIImage)
+    func fusumaVideoCompleted(withFileURL fileURL: URL)
+    func fusumaCameraRollUnauthorized()
+    
+    @objc optional func fusumaClosed()
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
 }
 
-public var fusumaBaseTintColor       = UIColor.hex("#FFFFFF", alpha: 1.0)
+public var fusumaBaseTintColor   = UIColor.hex("#FFFFFF", alpha: 1.0)
 public var fusumaTintColor       = UIColor.hex("#009688", alpha: 1.0)
 public var fusumaBackgroundColor = UIColor.hex("#212121", alpha: 1.0)
 
-<<<<<<< HEAD
-public var fusumaCropImage: Bool = true
-
-=======
 public var fusumaAlbumImage : UIImage? = nil
 public var fusumaCameraImage : UIImage? = nil
 public var fusumaVideoImage : UIImage? = nil
@@ -35,11 +62,11 @@ public var fusumaFlashOnImage : UIImage? = nil
 public var fusumaFlashOffImage : UIImage? = nil
 public var fusumaFlipImage : UIImage? = nil
 public var fusumaShotImage : UIImage? = nil
->>>>>>> upstream/master
 
 public var fusumaVideoStartImage : UIImage? = nil
 public var fusumaVideoStopImage : UIImage? = nil
 
+public var fusumaCropImage: Bool = true
 
 public var fusumaCameraRollTitle = "CAMERA ROLL"
 public var fusumaCameraTitle = "PHOTO"
@@ -48,21 +75,28 @@ public var fusumaVideoTitle = "VIDEO"
 public var fusumaTintIcons : Bool = true
 
 public enum FusumaModeOrder {
-    case CameraFirst
-    case LibraryFirst
+    case cameraFirst
+    case libraryFirst
 }
 
 //@objc public class FusumaViewController: UIViewController, FSCameraViewDelegate, FSAlbumViewDelegate {
 public final class FusumaViewController: UIViewController {
-    
+
     enum Mode {
-        case Camera
-        case Library
-        case Video
+        case camera
+        case library
+        case video
     }
-    
-    var mode: Mode = Mode.Camera
+
+    public var hasVideo = false
+
+<<<<<<< HEAD
+    var mode: Mode = Mode.Video
     public var modeOrder: FusumaModeOrder = .LibraryFirst
+=======
+    var mode: Mode = Mode.camera
+    public var modeOrder: FusumaModeOrder = .libraryFirst
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
     var willFilter = true
 
     @IBOutlet weak var photoLibraryViewerContainer: UIView!
@@ -79,312 +113,596 @@ public final class FusumaViewController: UIViewController {
 
     @IBOutlet var libraryFirstConstraints: [NSLayoutConstraint]!
     @IBOutlet var cameraFirstConstraints: [NSLayoutConstraint]!
-    
-    var albumView  = FSAlbumView.instance()
-    var cameraView = FSCameraView.instance()
-    var videoView = FSVideoCameraView.instance()
-    
+
+    lazy var albumView  = FSAlbumView.instance()
+    lazy var cameraView = FSCameraView.instance()
+    lazy var videoView = FSVideoCameraView.instance()
+
+    fileprivate var hasGalleryPermission: Bool {
+        return PHPhotoLibrary.authorizationStatus() == .authorized
+    }
+
     public weak var delegate: FusumaDelegate? = nil
-    
+
     override public func loadView() {
-        
+<<<<<<< HEAD
+
         if let view = UINib(nibName: "FusumaViewController", bundle: NSBundle(forClass: self.classForCoder)).instantiateWithOwner(self, options: nil).first as? UIView {
+
+=======
+        
+        if let view = UINib(nibName: "FusumaViewController", bundle: Bundle(for: self.classForCoder)).instantiate(withOwner: self, options: nil).first as? UIView {
             
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
             self.view = view
         }
     }
-    
+
     override public func viewDidLoad() {
         super.viewDidLoad()
-    
+
         self.view.backgroundColor = fusumaBackgroundColor
-        
+
         cameraView.delegate = self
         albumView.delegate  = self
         videoView.delegate = self
 
         menuView.backgroundColor = fusumaBackgroundColor
+<<<<<<< HEAD
         menuView.addBottomBorder(UIColor.blackColor(), width: 1.0)
-        
+
         let bundle = NSBundle(forClass: self.classForCoder)
-        
+
         // Get the custom button images if they're set
         let albumImage = fusumaAlbumImage != nil ? fusumaAlbumImage : UIImage(named: "ic_insert_photo", inBundle: bundle, compatibleWithTraitCollection: nil)
         let cameraImage = fusumaCameraImage != nil ? fusumaCameraImage : UIImage(named: "ic_photo_camera", inBundle: bundle, compatibleWithTraitCollection: nil)
-        
+
         let videoImage = fusumaVideoImage != nil ? fusumaVideoImage : UIImage(named: "ic_videocam", inBundle: bundle, compatibleWithTraitCollection: nil)
 
-        
+
         let checkImage = fusumaCheckImage != nil ? fusumaCheckImage : UIImage(named: "ic_check", inBundle: bundle, compatibleWithTraitCollection: nil)
         let closeImage = fusumaCloseImage != nil ? fusumaCloseImage : UIImage(named: "ic_close", inBundle: bundle, compatibleWithTraitCollection: nil)
-        
-        if(fusumaTintIcons) {
+
+        if fusumaTintIcons {
+
             libraryButton.setImage(albumImage?.imageWithRenderingMode(.AlwaysTemplate), forState: .Normal)
             libraryButton.setImage(albumImage?.imageWithRenderingMode(.AlwaysTemplate), forState: .Highlighted)
             libraryButton.setImage(albumImage?.imageWithRenderingMode(.AlwaysTemplate), forState: .Selected)
+=======
+        menuView.addBottomBorder(UIColor.black, width: 1.0)
+        
+        let bundle = Bundle(for: self.classForCoder)
+        
+        // Get the custom button images if they're set
+        let albumImage = fusumaAlbumImage != nil ? fusumaAlbumImage : UIImage(named: "ic_insert_photo", in: bundle, compatibleWith: nil)
+        let cameraImage = fusumaCameraImage != nil ? fusumaCameraImage : UIImage(named: "ic_photo_camera", in: bundle, compatibleWith: nil)
+        
+        let videoImage = fusumaVideoImage != nil ? fusumaVideoImage : UIImage(named: "ic_videocam", in: bundle, compatibleWith: nil)
+
+        
+        let checkImage = fusumaCheckImage != nil ? fusumaCheckImage : UIImage(named: "ic_check", in: bundle, compatibleWith: nil)
+        let closeImage = fusumaCloseImage != nil ? fusumaCloseImage : UIImage(named: "ic_close", in: bundle, compatibleWith: nil)
+        
+        if fusumaTintIcons {
+            
+            libraryButton.setImage(albumImage?.withRenderingMode(.alwaysTemplate), for: UIControlState())
+            libraryButton.setImage(albumImage?.withRenderingMode(.alwaysTemplate), for: .highlighted)
+            libraryButton.setImage(albumImage?.withRenderingMode(.alwaysTemplate), for: .selected)
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
             libraryButton.tintColor = fusumaTintColor
             libraryButton.adjustsImageWhenHighlighted = false
 
-            cameraButton.setImage(cameraImage?.imageWithRenderingMode(.AlwaysTemplate), forState: .Normal)
-            cameraButton.setImage(cameraImage?.imageWithRenderingMode(.AlwaysTemplate), forState: .Highlighted)
-            cameraButton.setImage(cameraImage?.imageWithRenderingMode(.AlwaysTemplate), forState: .Selected)
+            cameraButton.setImage(cameraImage?.withRenderingMode(.alwaysTemplate), for: UIControlState())
+            cameraButton.setImage(cameraImage?.withRenderingMode(.alwaysTemplate), for: .highlighted)
+            cameraButton.setImage(cameraImage?.withRenderingMode(.alwaysTemplate), for: .selected)
             cameraButton.tintColor  = fusumaTintColor
             cameraButton.adjustsImageWhenHighlighted  = false
-            
+<<<<<<< HEAD
+
             closeButton.setImage(closeImage?.imageWithRenderingMode(.AlwaysTemplate), forState: .Normal)
             closeButton.setImage(closeImage?.imageWithRenderingMode(.AlwaysTemplate), forState: .Highlighted)
             closeButton.setImage(closeImage?.imageWithRenderingMode(.AlwaysTemplate), forState: .Selected)
             closeButton.tintColor = fusumaBaseTintColor
-            
+
             videoButton.setImage(videoImage, forState: .Normal)
             videoButton.setImage(videoImage, forState: .Highlighted)
             videoButton.setImage(videoImage, forState: .Selected)
             videoButton.tintColor  = fusumaTintColor
             videoButton.adjustsImageWhenHighlighted = false
-            
+
             doneButton.setImage(checkImage?.imageWithRenderingMode(.AlwaysTemplate), forState: .Normal)
-            doneButton.tintColor = fusumaBaseTintColor
+=======
             
+            closeButton.setImage(closeImage?.withRenderingMode(.alwaysTemplate), for: UIControlState())
+            closeButton.setImage(closeImage?.withRenderingMode(.alwaysTemplate), for: .highlighted)
+            closeButton.setImage(closeImage?.withRenderingMode(.alwaysTemplate), for: .selected)
+            closeButton.tintColor = fusumaBaseTintColor
+            
+            videoButton.setImage(videoImage, for: UIControlState())
+            videoButton.setImage(videoImage, for: .highlighted)
+            videoButton.setImage(videoImage, for: .selected)
+            videoButton.tintColor  = fusumaTintColor
+            videoButton.adjustsImageWhenHighlighted = false
+            
+            doneButton.setImage(checkImage?.withRenderingMode(.alwaysTemplate), for: UIControlState())
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
+            doneButton.tintColor = fusumaBaseTintColor
+
         } else {
+<<<<<<< HEAD
+
             libraryButton.setImage(albumImage, forState: .Normal)
             libraryButton.setImage(albumImage, forState: .Highlighted)
             libraryButton.setImage(albumImage, forState: .Selected)
             libraryButton.tintColor = nil
-            
+
             cameraButton.setImage(cameraImage, forState: .Normal)
             cameraButton.setImage(cameraImage, forState: .Highlighted)
             cameraButton.setImage(cameraImage, forState: .Selected)
+=======
+            
+            libraryButton.setImage(albumImage, for: UIControlState())
+            libraryButton.setImage(albumImage, for: .highlighted)
+            libraryButton.setImage(albumImage, for: .selected)
+            libraryButton.tintColor = nil
+            
+            cameraButton.setImage(cameraImage, for: UIControlState())
+            cameraButton.setImage(cameraImage, for: .highlighted)
+            cameraButton.setImage(cameraImage, for: .selected)
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
             cameraButton.tintColor = nil
 
-            videoButton.setImage(videoImage, forState: .Normal)
-            videoButton.setImage(videoImage, forState: .Highlighted)
-            videoButton.setImage(videoImage, forState: .Selected)
+            videoButton.setImage(videoImage, for: UIControlState())
+            videoButton.setImage(videoImage, for: .highlighted)
+            videoButton.setImage(videoImage, for: .selected)
             videoButton.tintColor = nil
-            
+<<<<<<< HEAD
+
             closeButton.setImage(closeImage, forState: .Normal)
             doneButton.setImage(checkImage, forState: .Normal)
+=======
+            
+            closeButton.setImage(closeImage, for: UIControlState())
+            doneButton.setImage(checkImage, for: UIControlState())
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
         }
-        
+
         cameraButton.clipsToBounds  = true
         libraryButton.clipsToBounds = true
         videoButton.clipsToBounds = true
 
-        changeMode(Mode.Library)
+<<<<<<< HEAD
+        if modeOrder == .LibraryFirst {
+            changeMode(Mode.Library)
+        } else {
+            changeMode(Mode.Camera)
+        }
+=======
+        changeMode(Mode.library)
         
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
         photoLibraryViewerContainer.addSubview(albumView)
         cameraShotContainer.addSubview(cameraView)
         videoShotContainer.addSubview(videoView)
-        
+
 		titleLabel.textColor = fusumaBaseTintColor
-		
+
 //        if modeOrder != .LibraryFirst {
 //            libraryFirstConstraints.forEach { $0.priority = 250 }
 //            cameraFirstConstraints.forEach { $0.priority = 1000 }
 //        }
+
+        if !hasVideo {
+
+            videoButton.removeFromSuperview()
+
+            self.view.addConstraint(NSLayoutConstraint(
+                item:       self.view,
+                attribute:  .trailing,
+                relatedBy:  .equal,
+                toItem:     cameraButton,
+                attribute:  .trailing,
+                multiplier: 1.0,
+                constant:   0
+                )
+            )
+
+            self.view.layoutIfNeeded()
+        }
+
+        if fusumaCropImage {
+            cameraView.fullAspectRatioConstraint.isActive = false
+            cameraView.croppedAspectRatioConstraint.isActive = true
+        } else {
+            cameraView.fullAspectRatioConstraint.isActive = true
+            cameraView.croppedAspectRatioConstraint.isActive = false
+        }
     }
-    
+<<<<<<< HEAD
+
     override public func viewWillAppear(animated: Bool) {
+=======
+    
+    override public func viewWillAppear(_ animated: Bool) {
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
         super.viewWillAppear(animated)
-        
+
     }
 
-    override public func viewDidAppear(animated: Bool) {
+    override public func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+<<<<<<< HEAD
+
         albumView.frame  = CGRect(origin: CGPointZero, size: photoLibraryViewerContainer.frame.size)
-        albumView.layoutIfNeeded()
-        cameraView.frame = CGRect(origin: CGPointZero, size: cameraShotContainer.frame.size)
-        cameraView.layoutIfNeeded()
-        videoView.frame = CGRect(origin: CGPointZero, size: videoShotContainer.frame.size)
-        videoView.layoutIfNeeded()
+=======
         
+        albumView.frame  = CGRect(origin: CGPoint.zero, size: photoLibraryViewerContainer.frame.size)
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
+        albumView.layoutIfNeeded()
+        cameraView.frame = CGRect(origin: CGPoint.zero, size: cameraShotContainer.frame.size)
+        cameraView.layoutIfNeeded()
+
+
         albumView.initialize()
         cameraView.initialize()
-        videoView.initialize()
+
+        if hasVideo {
+
+            videoView.frame = CGRect(origin: CGPoint.zero, size: videoShotContainer.frame.size)
+            videoView.layoutIfNeeded()
+            videoView.initialize()
+        }
     }
-    
+<<<<<<< HEAD
+
     public override func viewWillDisappear(animated: Bool) {
+=======
+    
+    public override func viewWillDisappear(_ animated: Bool) {
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
         super.viewWillDisappear(animated)
         self.stopAll()
     }
 
+<<<<<<< HEAD
     override public func prefersStatusBarHidden() -> Bool {
+
+        return true
+    }
+
+    @IBAction func closeButtonPressed(sender: UIButton) {
+        self.dismissViewControllerAnimated(true, completion: {
+
+            self.delegate?.fusumaClosed?()
+        })
+    }
+
+    @IBAction func libraryButtonPressed(sender: UIButton) {
+
+        changeMode(Mode.Library)
+    }
+
+    @IBAction func photoButtonPressed(sender: UIButton) {
+
+        changeMode(Mode.Camera)
+    }
+
+    @IBAction func videoButtonPressed(sender: UIButton) {
+
+        changeMode(Mode.Video)
+    }
+
+    @IBAction func doneButtonPressed(sender: UIButton) {
+        let view = albumView.imageCropView
+
+        if fusumaCropImage {
+            let normalizedX = view.contentOffset.x / view.contentSize.width
+            let normalizedY = view.contentOffset.y / view.contentSize.height
+
+            let normalizedWidth = view.frame.width / view.contentSize.width
+            let normalizedHeight = view.frame.height / view.contentSize.height
+
+            let cropRect = CGRect(x: normalizedX, y: normalizedY, width: normalizedWidth, height: normalizedHeight)
+
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), {
+
+=======
+    override public var prefersStatusBarHidden : Bool {
         
         return true
     }
     
-    @IBAction func closeButtonPressed(sender: UIButton) {
-        self.dismissViewControllerAnimated(true, completion: {
+    @IBAction func closeButtonPressed(_ sender: UIButton) {
+        self.dismiss(animated: true, completion: {
             
             self.delegate?.fusumaClosed?()
         })
     }
     
-    @IBAction func libraryButtonPressed(sender: UIButton) {
+    @IBAction func libraryButtonPressed(_ sender: UIButton) {
         
-        changeMode(Mode.Library)
+        changeMode(Mode.library)
     }
     
-    @IBAction func photoButtonPressed(sender: UIButton) {
+    @IBAction func photoButtonPressed(_ sender: UIButton) {
     
-        changeMode(Mode.Camera)
+        changeMode(Mode.camera)
     }
     
-    @IBAction func videoButtonPressed(sender: UIButton) {
+    @IBAction func videoButtonPressed(_ sender: UIButton) {
         
-        changeMode(Mode.Video)
+        changeMode(Mode.video)
     }
     
-    @IBAction func doneButtonPressed(sender: UIButton) {
-        
+    @IBAction func doneButtonPressed(_ sender: UIButton) {
         let view = albumView.imageCropView
-        let image:UIImage
-        
+
         if fusumaCropImage {
-            UIGraphicsBeginImageContextWithOptions(view.frame.size, true, 0)
-            let context = UIGraphicsGetCurrentContext()
-            CGContextTranslateCTM(context, -albumView.imageCropView.contentOffset.x, -albumView.imageCropView.contentOffset.y)
-            view.layer.renderInContext(context!)
-            image = UIGraphicsGetImageFromCurrentImageContext()
-            UIGraphicsEndImageContext()
+            let normalizedX = (view?.contentOffset.x)! / (view?.contentSize.width)!
+            let normalizedY = (view?.contentOffset.y)! / (view?.contentSize.height)!
+            
+            let normalizedWidth = (view?.frame.width)! / (view?.contentSize.width)!
+            let normalizedHeight = (view?.frame.height)! / (view?.contentSize.height)!
+            
+            let cropRect = CGRect(x: normalizedX, y: normalizedY, width: normalizedWidth, height: normalizedHeight)
+            
+            DispatchQueue.global(qos: .default).async(execute: {
+                
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
+                let options = PHImageRequestOptions()
+                options.deliveryMode = .highQualityFormat
+                options.isNetworkAccessAllowed = true
+                options.normalizedCropRect = cropRect
+<<<<<<< HEAD
+                options.resizeMode = .Exact
+
+                let targetWidth = floor(CGFloat(self.albumView.phAsset.pixelWidth) * cropRect.width)
+                let targetHeight = floor(CGFloat(self.albumView.phAsset.pixelHeight) * cropRect.height)
+                let dimension = max(min(targetHeight, targetWidth), 1024 * UIScreen.mainScreen().scale)
+
+                let targetSize = CGSize(width: dimension, height: dimension)
+
+                PHImageManager.defaultManager().requestImageForAsset(self.albumView.phAsset, targetSize: targetSize,
+                contentMode: .AspectFill, options: options) {
+                    result, info in
+
+                    dispatch_async(dispatch_get_main_queue(), {
+                        self.delegate?.fusumaImageSelected(result!)
+
+                        self.dismissViewControllerAnimated(true, completion: {
+=======
+                options.resizeMode = .exact
+                
+                let targetWidth = floor(CGFloat(self.albumView.phAsset.pixelWidth) * cropRect.width)
+                let targetHeight = floor(CGFloat(self.albumView.phAsset.pixelHeight) * cropRect.height)
+                let dimension = max(min(targetHeight, targetWidth), 1024 * UIScreen.main.scale)
+                
+                let targetSize = CGSize(width: dimension, height: dimension)
+                
+                PHImageManager.default().requestImage(for: self.albumView.phAsset, targetSize: targetSize,
+                contentMode: .aspectFill, options: options) {
+                    result, info in
+                    
+                    DispatchQueue.main.async(execute: {
+                        self.delegate?.fusumaImageSelected(result!)
+                        
+                        self.dismiss(animated: true, completion: {
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
+                            self.delegate?.fusumaDismissedWithImage?(result!)
+                        })
+                    })
+                }
+            })
         } else {
             print("no image crop ")
-            image = view.image
+<<<<<<< HEAD
+            delegate?.fusumaImageSelected(view.image)
+
+            self.dismissViewControllerAnimated(true, completion: {
+                self.delegate?.fusumaDismissedWithImage?(view.image)
+=======
+            delegate?.fusumaImageSelected((view?.image)!)
+            
+            self.dismiss(animated: true, completion: {
+                self.delegate?.fusumaDismissedWithImage?((view?.image)!)
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
+            })
         }
-        
-        delegate?.fusumaImageSelected(image)
-        
-        self.dismissViewControllerAnimated(true, completion: {
-            self.delegate?.fusumaDismissedWithImage?(image)
-        })
     }
-    
+
 }
 
 extension FusumaViewController: FSAlbumViewDelegate, FSCameraViewDelegate, FSVideoCameraViewDelegate {
-    
+
     // MARK: FSCameraViewDelegate
+<<<<<<< HEAD
     func cameraShotFinished(image: UIImage) {
-        
+
         delegate?.fusumaImageSelected(image)
         self.dismissViewControllerAnimated(true, completion: {
+
+=======
+    func cameraShotFinished(_ image: UIImage) {
+        
+        delegate?.fusumaImageSelected(image)
+        self.dismiss(animated: true, completion: {
             
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
             self.delegate?.fusumaDismissedWithImage?(image)
         })
     }
-    
+
     // MARK: FSAlbumViewDelegate
     public func albumViewCameraRollUnauthorized() {
         delegate?.fusumaCameraRollUnauthorized()
     }
-    
+<<<<<<< HEAD
+
     func videoFinished(withFileURL fileURL: NSURL) {
-        delegate?.fusumaVideoCompleted(withFileURL: fileURL)
-        self.dismissViewControllerAnimated(true, completion: nil)
-    }
+=======
     
+    func videoFinished(withFileURL fileURL: URL) {
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
+        delegate?.fusumaVideoCompleted(withFileURL: fileURL)
+        self.dismiss(animated: true, completion: nil)
+    }
+
 }
 
 private extension FusumaViewController {
-    
+
     func stopAll() {
-        self.videoView.stopCamera()
+
+        if hasVideo {
+
+            self.videoView.stopCamera()
+        }
+
         self.cameraView.stopCamera()
     }
-    
+<<<<<<< HEAD
+
     func changeMode(mode: Mode) {
+=======
+    
+    func changeMode(_ mode: Mode) {
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
 
         if self.mode == mode {
             return
         }
-        
+
         //operate this switch before changing mode to stop cameras
         switch self.mode {
-        case .Library:
+        case .library:
             break
-        case .Camera:
+        case .camera:
             self.cameraView.stopCamera()
-        case .Video:
+        case .video:
             self.videoView.stopCamera()
         }
-        
+
         self.mode = mode
-        
+
         dishighlightButtons()
-        
+
         switch mode {
-        case .Library:
+        case .library:
             titleLabel.text = NSLocalizedString(fusumaCameraRollTitle, comment: fusumaCameraRollTitle)
+<<<<<<< HEAD
             doneButton.hidden = false
+
+=======
+            doneButton.isHidden = false
             
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
             highlightButton(libraryButton)
-            self.view.bringSubviewToFront(photoLibraryViewerContainer)
-        case .Camera:
+            self.view.bringSubview(toFront: photoLibraryViewerContainer)
+        case .camera:
             titleLabel.text = NSLocalizedString(fusumaCameraTitle, comment: fusumaCameraTitle)
+<<<<<<< HEAD
             doneButton.hidden = true
+
+=======
+            doneButton.isHidden = true
             
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
             highlightButton(cameraButton)
-            self.view.bringSubviewToFront(cameraShotContainer)
+            self.view.bringSubview(toFront: cameraShotContainer)
             cameraView.startCamera()
-        case .Video:
+        case .video:
             titleLabel.text = fusumaVideoTitle
+<<<<<<< HEAD
             doneButton.hidden = true
+
+=======
+            doneButton.isHidden = true
             
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
             highlightButton(videoButton)
-            self.view.bringSubviewToFront(videoShotContainer)
+            self.view.bringSubview(toFront: videoShotContainer)
             videoView.startCamera()
         }
-        self.view.bringSubviewToFront(menuView)
+        doneButton.isHidden = !hasGalleryPermission
+        self.view.bringSubview(toFront: menuView)
     }
-    
-    
+
+
     func dishighlightButtons() {
         cameraButton.tintColor  = fusumaBaseTintColor
         libraryButton.tintColor = fusumaBaseTintColor
-        videoButton.tintColor = fusumaBaseTintColor
-        
+
         if cameraButton.layer.sublayers?.count > 1 {
-            
+
             for layer in cameraButton.layer.sublayers! {
-                
+<<<<<<< HEAD
+
                 if let borderColor = layer.borderColor where UIColor(CGColor: borderColor) == fusumaTintColor {
+
+=======
+                
+                if let borderColor = layer.borderColor , UIColor(cgColor: borderColor) == fusumaTintColor {
                     
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
                     layer.removeFromSuperlayer()
                 }
-                
+
             }
         }
-        
+
         if libraryButton.layer.sublayers?.count > 1 {
-            
+
             for layer in libraryButton.layer.sublayers! {
-                
+<<<<<<< HEAD
+
                 if let borderColor = layer.borderColor where UIColor(CGColor: borderColor) == fusumaTintColor {
+
+=======
+                
+                if let borderColor = layer.borderColor , UIColor(cgColor: borderColor) == fusumaTintColor {
                     
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
                     layer.removeFromSuperlayer()
                 }
-                
+
             }
         }
-        
-        if videoButton.layer.sublayers?.count > 1 {
-            
-            for layer in videoButton.layer.sublayers! {
-                
-                if let borderColor = layer.borderColor where UIColor(CGColor: borderColor) == fusumaTintColor {
+
+        if let videoButton = videoButton {
+
+            videoButton.tintColor = fusumaBaseTintColor
+
+            if videoButton.layer.sublayers?.count > 1 {
+
+                for layer in videoButton.layer.sublayers! {
+<<<<<<< HEAD
+
+                    if let borderColor = layer.borderColor where UIColor(CGColor: borderColor) == fusumaTintColor {
+
+=======
                     
-                    layer.removeFromSuperlayer()
+                    if let borderColor = layer.borderColor , UIColor(cgColor: borderColor) == fusumaTintColor {
+                        
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
+                        layer.removeFromSuperlayer()
+                    }
+
                 }
-                
             }
         }
-        
+
     }
-    
+<<<<<<< HEAD
+
     func highlightButton(button: UIButton) {
+
+=======
+    
+    func highlightButton(_ button: UIButton) {
         
+>>>>>>> 71db8295b994732df6e0474f0809988ebdcc0df2
         button.tintColor = fusumaTintColor
-        
+
         button.addBottomBorder(fusumaTintColor, width: 3)
     }
 }
